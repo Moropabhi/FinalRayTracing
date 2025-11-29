@@ -40,6 +40,7 @@ class camera
 								for(int v = 1;v<=sample_count;v++)
 								{
 										vec3 ray_direction = pixel_tl+(u*pixel_delta_u+v*pixel_delta_v)/sample_count - camera_center;
+						ray_direction.normalise();
 						ray r(camera_center, ray_direction);
 						vec3 col = ray_color(r,world,max_depth);
 						pixel_color+=col;
@@ -96,7 +97,7 @@ void write(std::ofstream& out, vec3 color){
 }
 
 vec3 ray_color(const ray& r,const HittableList& world,int depth) {
-		if(depth<=0)return vec3(0.0);
+		if(depth<=0)return vec3(1.0,1.0,1.0);
 		HitRecord rec;
 		if(world.hit(r, interval(0.001, INFINITY), rec))
 		{

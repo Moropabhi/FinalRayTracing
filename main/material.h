@@ -47,3 +47,40 @@ private:
 				vec3 albedo;
 				double fuzz;
 };
+class dielectric:public material
+{
+		public:
+				dielectric(vec3 albedo,double refractive_index,double probability_of_reflection):albedo(albedo),refractive_index(refractive_index),p_reflect(probability_of_reflection){}
+				bool scatter(const ray &incident, const HitRecord &rec, vec3 &attenuation, ray &scattered) override
+				{
+				attenuation = albedo;
+				if(p_reflect!=0)
+				{
+						if(random_double()<=p_reflect)
+						{
+						vec3 reflected =reflect(incident.direction(),rec.norm);
+						scattered = ray{rec.point,unit_vector(reflected)};
+						return true;
+						}
+				}
+				double ri = rec.facenorm?1.0/refractive_index:refractive_index;
+				double cos_theta = -dot(incident.direction(),rec.norm);
+				if(ri>1)
+				{
+						double sin_theta_2 = 1 - cos_theta*cos_theta;
+						if(sin_theta_2*ri*ri>1)
+						{
+				vec3 reflected =reflect(incident.direction(),rec.norm);
+				scattered = ray{rec.point,unit_vector(reflected)};
+				return true;
+						}
+				}
+				vec3 refracted =refract(incident.direction(),rec.norm,ri);
+				scattered = ray{rec.point,refracted};
+				return true;
+				}
+private:
+				vec3 albedo;
+				double refractive_index;
+				double p_reflect;
+};
