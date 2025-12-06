@@ -128,5 +128,9 @@ vec3 refract(const vec3& i,const vec3& n, double etai_over_etar)
     vec3 r_out_parallel = -std::sqrt((1.0 - r_out_perp.length_squared())) * n;
     return r_out_perp + r_out_parallel;
 }
+inline vec3 rand_unit_disk(vec3 u,vec3 v)
+{
+		return unit_vector(v*random_double()+u*random_double())*random_double_range(0, 1); 
+}
 
 #endif

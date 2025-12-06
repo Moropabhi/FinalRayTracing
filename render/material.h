@@ -50,37 +50,31 @@ private:
 class dielectric:public material
 {
 		public:
-				dielectric(vec3 albedo,double refractive_index,double probability_of_reflection):albedo(albedo),refractive_index(refractive_index),p_reflect(probability_of_reflection){}
+				dielectric(vec3 albedo,double refractive_index):albedo(albedo),refractive_index(refractive_index){}
 				bool scatter(const ray &incident, const HitRecord &rec, vec3 &attenuation, ray &scattered) override
 				{
 				attenuation = albedo;
-				if(p_reflect!=0)
-				{
-						if(random_double()<=p_reflect)
-						{
-						vec3 reflected =reflect(incident.direction(),rec.norm);
-						scattered = ray{rec.point,unit_vector(reflected)};
-						return true;
-						}
-				}
 				double ri = rec.facenorm?1.0/refractive_index:refractive_index;
 				double cos_theta = -dot(incident.direction(),rec.norm);
-				if(ri>1)
-				{
 						double sin_theta_2 = 1 - cos_theta*cos_theta;
-						if(sin_theta_2*ri*ri>1)
+				if(((ri>1) && (sin_theta_2*ri*ri>1) )||(reflectance(cos_theta,ri)>random_double_range(0, 1)))
 						{
 				vec3 reflected =reflect(incident.direction(),rec.norm);
 				scattered = ray{rec.point,unit_vector(reflected)};
 				return true;
 						}
-				}
 				vec3 refracted =refract(incident.direction(),rec.norm,ri);
 				scattered = ray{rec.point,refracted};
 				return true;
 				}
+				static double reflectance(double cosine, double refractive_index)
+				{
+						double r0= (1- refractive_index)/(1+refractive_index);
+						r0=r0*r0;
+						return r0 + (1-r0)*std::pow(1-cosine,5);
+
+				}
 private:
 				vec3 albedo;
 				double refractive_index;
-				double p_reflect;
 };

@@ -2,6 +2,8 @@
 #include "../render/camera.h"
 #include "../render/material.h"
 #include "../render/sphere.h"
+#include <fstream>
+#include <istream>
 #include <memory>
 /*TODO
  *
@@ -21,18 +23,29 @@ int main() {
 	world.add(std::make_shared<Sphere>(vec3{-1.0,0,-1.0},0.5,b3));	
 	world.add(std::make_shared<Sphere>(vec3{-1.0,0,-1.0},0.4,b3b));	
 	world.add(std::make_shared<Sphere>(vec3{0.0,-100.5,-1.0},100.0,ground));	
-
 	camera cam;
-		cam.aspect_ratio=16.0/9;
-		cam.image_width=800;
-		cam.vfov=20;
-		cam.defocus_angle=10;
-		cam.focal_dist=3.4;
-		cam.lookfrom=vec3(-2.0,2.0,1.0);
-		cam.lookat=vec3(0.,0.,-1.0);
-		cam.vup=vec3(0.,1.,0.0);
-		cam.sample_count = 5;
-		cam.max_depth = 5;
+		std::ifstream in("viewer/transfer.txt");
+		if(!in.is_open()){
+				std::cout<<"Error in opening the file\n";
+				exit(1);
+		}
+		in>>cam.aspect_ratio;
+		in>>cam.image_width;
+		in>>cam.vfov;
+		in>>cam.defocus_angle;
+		in>>cam.focal_dist;
+		in>>cam.lookfrom[0];
+		in>>cam.lookfrom[1];
+		in>>cam.lookfrom[2];
+		in>>cam.lookat[0];
+		in>>cam.lookat[1];
+		in>>cam.lookat[2];
+		in>>cam.vup[0];
+		in>>cam.vup[1];
+		in>>cam.vup[2];
+		in>>cam.sample_count;
+		in>>cam.max_depth;
+		in.close();
 	cam.initialize();
 	cam.render(world);
     return 0;

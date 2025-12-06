@@ -12,15 +12,22 @@ class camera
 {
 		public:
 		double aspect_ratio=16.0/9;
-		int image_width=400,image_height;
-		double focal_length = 1.0;
-		double viewport_height = 2.0;
-		vec3 camera_center = vec3(0, 0, 0);
+		int image_width=400;
 		int sample_count = 1;
 		int max_depth = 25;
+		float vfov;
+		vec3 lookat,lookfrom,vup;
+		float defocus_angle = 0;
+		float focal_dist = 1.0;
+		//vup is aligned along the height of the viewport 
 		private:
+		int image_height;
+		double viewport_height = 2.0;
+		vec3 camera_center = vec3(0, 0, 0);
 		vec3 pixel00_loc,//loc of (0,0) pixel at the top left
 			 pixel_delta_u,pixel_delta_v;
+		float aperature_rad = 0;
+		vec3 u,v,w;
 		public:
 		void render(const HittableList& world)
 		{
@@ -39,9 +46,10 @@ class camera
 						for(int u = 1; u<=sample_count;u++)
 								for(int v = 1;v<=sample_count;v++)
 								{
-										vec3 ray_direction = pixel_tl+(u*pixel_delta_u+v*pixel_delta_v)/sample_count - camera_center;
+										vec3 origin = (aperature_rad==0)?camera_center:camera_center+rand_unit_disk(u,v)*aperature_rad;
+										vec3 ray_direction = pixel_tl+(u*pixel_delta_u+v*pixel_delta_v)/sample_count - origin;
 						ray_direction.normalise();
-						ray r(camera_center, ray_direction);
+						ray r(origin, ray_direction);
 						vec3 col = ray_color(r,world,max_depth);
 						pixel_color+=col;
 								}
@@ -62,18 +70,29 @@ class camera
 		aspect_ratio = image_width/double(image_height);
 
 		// Camera
+		camera_center=lookfrom;
+		//up.normalise();
+		w = lookat - lookfrom;
+		w.normalise();
+		w=-w;
+		u=cross(vup,w);
+		u.normalise();
+		v=cross(w,u);
+		viewport_height = 2*std::tan(degtorad( vfov/2))*focal_dist;
 		double viewport_width = viewport_height * aspect_ratio;
+		
+		aperature_rad = std::tan(degtorad(defocus_angle/2))*focal_dist;
 
 		// Calculate the vectors across the horizontal and down the vertical viewport edges.
-		vec3 viewport_u = vec3(viewport_width, 0, 0);
-		vec3 viewport_v = vec3(0, -viewport_height, 0);
+		vec3 viewport_u = viewport_width*u;
+		vec3 viewport_v = -viewport_height*v;
 
 		// Calculate the horizontal and vertical delta vectors from pixel to pixel.
 		pixel_delta_u = viewport_u / image_width;
 		pixel_delta_v = viewport_v / image_height;
 
 		// Calculate the location of the upper left pixel.
-		vec3 viewport_upper_left = camera_center - vec3(0, 0, focal_length) - viewport_u/2 - viewport_v/2;
+		vec3 viewport_upper_left = camera_center -focal_dist*w - viewport_u/2 - viewport_v/2;
 		pixel00_loc =viewport_upper_left;
 		}
 inline double linear_to_gamma(double linear_component)
