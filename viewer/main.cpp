@@ -1,52 +1,75 @@
-#include "../lib/math/vec3.h"
-#include "../render/camera.h"
-#include "../render/material.h"
-#include "../render/sphere.h"
-#include <fstream>
-#include <istream>
-#include <memory>
-/*TODO
- *
- * removing random vector and approaching uniform distribution
-*/
-
-int main() {
-
-		HittableList world;
-		std::shared_ptr<material> ground = std::make_shared<lambertian>(vec3{0.8,1.0,0.9}),
-				   b1= std::make_shared<lambertian>(vec3{1.0,0.,0.}),
-				   b2= std::make_shared<metal>(vec3{1.0,0.,1.},0.0),
-				   b3= std::make_shared<dielectric>(vec3{1.0,1.,1.},1.5),
-				   b3b= std::make_shared<dielectric>(vec3{1.0,1.,1.},1/1.5);
-	world.add(std::make_shared<Sphere>(vec3{0.0,0.0,-1.2},0.5,b1));	
-	world.add(std::make_shared<Sphere>(vec3{1.0,.0,-1.0},0.5,b2));	
-	world.add(std::make_shared<Sphere>(vec3{-1.0,0,-1.0},0.5,b3));	
-	world.add(std::make_shared<Sphere>(vec3{-1.0,0,-1.0},0.4,b3b));	
-	world.add(std::make_shared<Sphere>(vec3{0.0,-100.5,-1.0},100.0,ground));	
-	camera cam;
-		std::ifstream in("viewer/transfer.txt");
-		if(!in.is_open()){
-				std::cout<<"Error in opening the file\n";
-				exit(1);
-		}
-		in>>cam.aspect_ratio;
-		in>>cam.image_width;
-		in>>cam.vfov;
-		in>>cam.defocus_angle;
-		in>>cam.focal_dist;
-		in>>cam.lookfrom[0];
-		in>>cam.lookfrom[1];
-		in>>cam.lookfrom[2];
-		in>>cam.lookat[0];
-		in>>cam.lookat[1];
-		in>>cam.lookat[2];
-		in>>cam.vup[0];
-		in>>cam.vup[1];
-		in>>cam.vup[2];
-		in>>cam.sample_count;
-		in>>cam.max_depth;
-		in.close();
-	cam.initialize();
-	cam.render(world);
-    return 0;
+// Start of wxWidgets "Hello World" Program
+#include "wx/wx.h"
+ 
+class MyApp : public wxApp
+{
+public:
+    bool OnInit() override;
+};
+ 
+wxIMPLEMENT_APP(MyApp);
+ 
+class MyFrame : public wxFrame
+{
+public:
+    MyFrame();
+ 
+private:
+    void OnHello(wxCommandEvent& event);
+    void OnExit(wxCommandEvent& event);
+    void OnAbout(wxCommandEvent& event);
+};
+ 
+enum
+{
+    ID_Hello = 1
+};
+ 
+bool MyApp::OnInit()
+{
+    MyFrame *frame = new MyFrame();
+    frame->Show(true);
+    return true;
+}
+ 
+MyFrame::MyFrame()
+    : wxFrame(nullptr, wxID_ANY, "Hello World")
+{
+    wxMenu *menuFile = new wxMenu;
+    menuFile->Append(ID_Hello, "&Hello...\tCtrl-H",
+                     "Help string shown in status bar for this menu item");
+    menuFile->AppendSeparator();
+    menuFile->Append(wxID_EXIT);
+ 
+    wxMenu *menuHelp = new wxMenu;
+    menuHelp->Append(wxID_ABOUT);
+ 
+    wxMenuBar *menuBar = new wxMenuBar;
+    menuBar->Append(menuFile, "&File");
+    menuBar->Append(menuHelp, "&Help");
+ 
+    SetMenuBar( menuBar );
+ 
+    CreateStatusBar();
+    SetStatusText("Welcome to wxWidgets!");
+ 
+    Bind(wxEVT_MENU, &MyFrame::OnHello, this, ID_Hello);
+    Bind(wxEVT_MENU, &MyFrame::OnAbout, this, wxID_ABOUT);
+    Bind(wxEVT_MENU, &MyFrame::OnExit, this, wxID_EXIT);
+}
+ 
+void MyFrame::OnExit(wxCommandEvent& event)
+{
+    Close(true);
+}
+ 
+void MyFrame::OnAbout(wxCommandEvent& event)
+{
+    wxMessageBox("This is a wxWidgets Hello World example",
+                 "About Hello World", wxOK | wxICON_INFORMATION);
+}
+ 
+void MyFrame::OnHello(wxCommandEvent& event)
+{
+    wxLogMessage("Hello world from wxWidgets!");
 }
